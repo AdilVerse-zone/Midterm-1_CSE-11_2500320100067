@@ -27,7 +27,9 @@ app.post('/api/books', (req, res) => {
         return res.status(409).json({ message: 'Duplicate book ID' });
     }
 
-    const book = { id, title, author, quantity };
+    const { available } = req.body;
+
+const book = { id, title, author, quantity, available };
     books.push(book);
 
     res.status(201).json({
@@ -92,6 +94,39 @@ app.put('/api/books/:id', (req, res) => {
     });
 
 });
+
+// TASK 5: Delete Book
+app.delete('/api/books/:id', (req, res) => {
+
+    const index = books.findIndex(
+        b => String(b.id) === req.params.id
+    );
+
+    if (index === -1) {
+        return res.status(404).json({
+            message: 'Book not found'
+        });
+    }
+
+    const book = books[index];
+
+    // Check available books
+    if (book.available < book.quantity) {
+        return res.status(400).json({
+            message: 'Cannot delete book. Some copies are issued.'
+        });
+    }
+
+    books.splice(index, 1);
+
+    res.status(200).json({
+        message: 'Book deleted successfully'
+    });
+
+});
+
+
+
 // Start Server
 app.listen(3000, () => {
     console.log('Server running at http://localhost:3000');
